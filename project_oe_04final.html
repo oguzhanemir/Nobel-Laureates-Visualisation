@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<style type="text/css">
+		body {
+			background-color: #ccc;
+			width = 100%;
+		}
+
+		#chart {
+			background-color: #ccc;
+			width: 1000px;
+			height: 500px;
+			margin: 50px auto; /* set a self-centering horizontal margin */
+			border: solid 1px #000;
+		}
+
+		svg {
+			background-color: #fff;
+		}
+
+		.dot {
+			stroke: #000;
+			stroke-width: 1px;
+		}
+
+		.axis line, .axis path {
+			stroke: #bbb;
+		}
+
+		.axis text {
+			fill: #bbb;
+		}
+
+		.yaxisLabel {
+			font-family: sans-serif;
+			font-size: 10px;
+			fill: #a83;
+			font-weight: bold;
+		}
+
+		#tooltip {
+			position: absolute;
+			background-color: #fff;
+			padding: 20px;
+			border: solid 1px #000;
+			opacity: 0;
+		}
+
+		.tooltipText {
+			font-family: sans-serif;
+			font-size: 16px;
+			fill: #000;
+			font-weight: bold;
+		}
+
+	</style>
+	<script type="text/javascript" src="d3.v7.js"></script>
+</head>
+
+<body>
+	<div id='chart'></div>
+	<div id='tooltip'></div>
+	<script type="text/javascript">
+		var width = 1000, height = 500, margin = 50, barWidth = 6, maxBarHeight = 50;
+		var rectangles;
+		var svg = d3.select('#chart')
+			.append('svg')
+			.attr('width', width + 'px')
+			.attr('height', height + 'px');
+
+		function convertCategory(categoryName) {
+			switch (categoryName) {
+				case 'Chemistry':
+					return 1;
+					break;
+				case 'Economics':
+					return 2;
+					break;
+				case 'Literature':
+					return 3;
+					break;
+				case 'Medicine':
+					return 4;
+					break;
+				case 'Peace':
+					return 5;
+					break;
+				case 'Physics':
+					return 6;
+					break;
+				default:
+					return 0;
+					break;		
+			}
+		}
+
+		function convertIndex(indexNo) {
+			switch (indexNo) {
+				case 1:
+					return 'Chemistry';
+					break;
+				case 2:
+					return 'Economics';
+					break;
+				case 3:
+					return 'Literature';
+					break;
+				case 4:
+					return 'Medicine';
+					break;
+				case 5:
+					return 'Peace';
+					break;
+				case 6:
+					return 'Physics';
+					break;
+				default:
+					return '';
+					break;		
+			}
+		}
+
+
+		d3.csv('https://twopoints.blog/datasets/nobel/nobel.csv').then(function(data){
+			
+			function convertGender(gender){
+				return gender == 'female' ? 1 : 0;
+			}
+
+			data = data.sort(function(a,b){
+					return convertGender(a.sex) - convertGender(b.sex);
+				});
+			// javascriipt sort didn't sort the category 
+
+			// console.log(data);
+
+			xMinMax = d3.extent(data, function(d){
+					return parseInt(d.year);
+					});
+
+			yMinMax = d3.extent(data, function(d){
+					return (convertCategory(d.category));
+					});
+			// console.log(yMinMax[0], yMinMax[1]);
+
+			hMinMax = d3.extent(data, function(d){
+					return parseInt(d.age);
+					});
+
+
+			xScale = d3.scaleLinear()
+					.domain([xMinMax[0], xMinMax[1]])
+					.range([0 + margin*0.5, width - margin*0.5]);
+
+			yScale = d3.scaleLinear()
+					.domain([yMinMax[0], yMinMax[1]])
+					.range([0 + margin*1.2, height - margin*1.2]);
+
+
+			hScale = d3.scaleLinear()
+					.domain([hMinMax[0], hMinMax[1]])
+					.range([0, maxBarHeight]);
+
+			cScale = d3.scaleOrdinal()
+					.domain(['male','female'])
+					.range(['#333','#FF6600']);
+
+			 var hValues = [hMinMax[0], hMinMax[1]];
+
+			//console.log(data);
+			//circles = svg.selectAll('.dot')  
+			//		.data(data)
+			//		.enter()
+			//		.append('circle')
+			//		.attr('cx', function(d){
+			//			return (d.year - 1900)*8;
+			//			console.log((d.year - 1900)*8);
+			//		})
+			//		.attr('cy', function(d){
+			//			return convertCategory(d.category)*70;
+			//		})
+			//		.attr('r', function(d){
+			//			return (d.age-15)/10;
+			//		})
+			//		.attr('fill', '#000')
+			//		.style('opacity', 0.2);
+
+			rectangles = svg.selectAll('.dot')
+				.data(data)
+				.enter()
+				.append('rect')
+				.attr('x', function(d){
+						return xScale(d.year);
+						
+					})
+				.attr('y', function(d){
+						return yScale(convertCategory(d.category)) - hScale(d.age)/2 ;
+					})
+				.attr('width', barWidth)
+				.attr('height', 0)
+				.attr('fill', function(d){
+						return cScale(d.sex);
+				})
+				.style('opacity', 0)
+				.on('mouseover', (event, d) => {
+						html = 'Winner: ' + d.name + '<br />';
+						html += 'X | year: ' + d.year + '<br />';
+						html +=  'Y | category: ' + d.category + '<br />';
+						html +=  'R | age: ' + d.age + '<br />';
+						html +=  'C | sex: ' + d.sex + '<br />';
+						d3.select('#tooltip')
+							.html(html)
+							.style('left', event.pageX - 100 + 'px')
+							.style('top', event.pageY - 150  + 'px')
+							.style('opacity', 0.85);
+						// console.log(event.pageX);
+					})			
+				.on('mouseout', function(d){
+						d3.select('#tooltip')
+							.style('left', -1000)
+							.style('opacity', 0);
+					});
+
+			xAxis = d3.axisBottom(xScale)
+				.tickValues([xMinMax[0],xMinMax[1]])
+				.tickFormat(d3.format('~f')); // to show years wthout thousand separaators
+
+
+			yAxis = d3.axisLeft(yScale).ticks(0);
+
+			xAxisG = svg.append('g')
+					.attr('id', 'xAxis')
+					.attr('class', 'axis');
+
+			yAxisG = svg.append('g')
+					.attr('id', 'yAxis')
+					.attr('class', 'axis')
+					;
+
+			
+			xAxisG.call(xAxis)
+				.attr('transform', 'translate(' + (barWidth/2) + ',' + (height-margin/2) + ')' );
+
+			// yAxisG.call(yAxis)
+			//	.attr('transform', 'translate(' + 2*margin/3 + ',' + 0 + ')' );
+
+
+			svg.append('text')
+					.attr('x', margin*0.5)
+					.attr('y', yScale(1) - maxBarHeight*0.45) // lowest y is at the bottom of the chart
+					.attr('text-anchor', 'start')
+					.attr('class', 'yaxisLabel')
+					.text(convertIndex(1).toUpperCase())
+					;
+
+			svg.append('text')
+					.attr('x', margin*0.5)
+					.attr('y', yScale(2) - maxBarHeight*0.45) // lowest y is at the bottom of the chart
+					.attr('text-anchor', 'start')
+					.attr('class', 'yaxisLabel')
+					.text(convertIndex(2).toUpperCase());
+
+			svg.append('text')
+					.attr('x', margin*0.5)
+					.attr('y', yScale(3) - maxBarHeight*0.45) // lowest y is at the bottom of the chart
+					.attr('text-anchor', 'start')
+					.attr('class', 'yaxisLabel')
+					.text(convertIndex(3).toUpperCase())
+					//.attr("transform", "rotate(-90)");
+
+			svg.append('text')
+					.attr('x', margin*0.5)
+					.attr('y', yScale(4) - maxBarHeight*0.45) // lowest y is at the bottom of the chart
+					.attr('text-anchor', 'start')
+					.attr('class', 'yaxisLabel')
+					.text(convertIndex(4).toUpperCase());
+
+			svg.append('text')
+					.attr('x', margin*0.5)
+					.attr('y', yScale(5) - maxBarHeight*0.45) // lowest y is at the bottom of the chart
+					.attr('text-anchor', 'start')
+					.attr('class', 'yaxisLabel')
+					.text(convertIndex(5).toUpperCase());
+
+			svg.append('text')
+					.attr('x', margin*0.5)
+					.attr('y', yScale(6) - maxBarHeight*0.45) // lowest y is at the bottom of the chart
+					.attr('text-anchor', 'start')
+					.attr('class', 'yaxisLabel')
+					.text(convertIndex(6).toUpperCase());
+
+			update();
+
+		function update() {
+				rectangles.transition()
+					.delay(function(d,i){
+						console.log(i);
+						return i * 2;
+					})
+					.attr('height',function(d){
+						return hScale(d.age);
+					})
+					.style('opacity', function(d){
+					return d.sex == 'female' ? 1 : 0.3;
+					})
+				;
+		}
+
+		});
+
+
+	</script>
+
+</body>
+</html>
