@@ -9,3 +9,7 @@ There is also signficant difference among distinct disciplines. For instance, py
 On some years bars overlap and become darker. That means we have more than one winner at that year and category.
 
 Enjoy and please share your comments: oguzhanemir@gmail.com
+
+2024-10-30 UPDATE:
+nobel.csv file is updated to include 2023-24 laureates. You can download and change the href source in the html.
+
