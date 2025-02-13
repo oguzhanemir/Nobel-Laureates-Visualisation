@@ -1,4 +1,4 @@
-This is a D3.js dot plot visualization to compare age and gender of Nobel Prize winners over the years.
+This is a D3.js combined column and dot plot visualization to compare age and gender of Nobel Prize winners over the years.
 
 I have replaced the dots of the plot by bars vertically aligned. Their height describes the age, higher the bar older the laureate at the time of their winning.
 
@@ -11,5 +11,5 @@ On some years bars overlap and become darker. That means we have more than one w
 Enjoy and please share your comments: oguzhanemir@gmail.com
 
 2024-10-30 UPDATE:
-nobel.csv file is updated to include 2023-24 laureates. You can download and change the href source in the html.
+nobel.csv file is updated to include 2023-24 laureates. Both my updated file and the source link are present in the html comment and the href source.
 
