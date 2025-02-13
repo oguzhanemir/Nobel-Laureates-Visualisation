@@ -124,8 +124,9 @@
 			}
 		}
 
-
-		d3.csv('https://twopoints.blog/datasets/nobel/nobel.csv').then(function(data){
+		// original link: https://twopoints.blog/datasets/nobel/nobel.csv
+		// my updated file: https://raw.githubusercontent.com/oguzhanemir/Nobel-Laureates-Visualisation/refs/heads/main/nobel.csv
+		d3.csv('https://raw.githubusercontent.com/oguzhanemir/Nobel-Laureates-Visualisation/refs/heads/main/nobel.csv').then(function(data){
 			
 			function convertGender(gender){
 				return gender == 'female' ? 1 : 0;
